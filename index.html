@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>360 VR Landscape</title>
+  <title>Student Landscape 360 VR</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -18,20 +18,76 @@
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 14px 28px;
+      padding: 16px 36px;
       background: #0084ff;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      border-radius: 10px;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
       z-index: 9999;
     }
+    #error-status {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      color: #ffb3b3;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      display: none;
+      z-index: 10000;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
-  <button id="vr-btn" style="display:none;">ENTER VR</button>
-  <script src="app.js"></script>
-</body>
-</html>
+  <div id="error-status"></div>
+  <button id="vr-btn">CHECKING VR...</button>
+
+  <script>
+    const statusBox = document.getElementById('error-status');
+    const vrBtn = document.getElementById('vr-btn');
+
+    function showError(msg) {
+      statusBox.style.display = 'block';
+      statusBox.textContent = msg;
+    }
+
+    // --- 1. THREE.JS 360 SCENE ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x171b18);
+    scene.fog = new THREE.FogExp2(0x171b18, 0.05);
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
+
+    const userRig = new THREE.Group();
+    userRig.position.set(0, 1.5, 0); // Natural eye height
+    userRig.add(camera);
+    scene.add(userRig);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // --- 2. STUDENT'S PROCEDURAL PARTICLES IN FULL 360° SPHERE ---
+    const layerHeights = [-1.15, -0.60, 0, 0.75, 1.45];
+    const layerDepths  = [-1.70, -0.90, 0, 0.85, 1.65];
+    const layerSizes   = [1.8, 1.4, 1.0, 1.1, 0.75];
+
+    const layerColors = [
+      [48 / 255, 67 / 255, 48 / 255],
+      [75 / 255, 96 / 255, 65 / 255],
+      [112 / 255, 119 / 255, 83 / 255],
+      [143 / 255, 119 / 255, 87 / 255],
+      [83 / 255, 72 / 255, 57 / 255]
+    ];
+    const layerCounts = [700, 850, 1100, 800, 750];
+
+    const centers = [
