@@ -3,106 +3,91 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>360 VR Landscape</title>
-
-  <!-- Load Three.js and the official VRButton helper -->
+  <title>Landscape 360 VR</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/webxr/VRButton.js"></script>
-
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
       background: #171b18;
-      font-family: monospace;
+      font-family: sans-serif;
     }
-    /* Always visible status/diagnostic bar at top */
-    #status-bar {
+    #vr-btn {
       position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      padding: 10px 14px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #00ff66;
-      border-radius: 6px;
-      font-size: 13px;
-      z-index: 10000;
-      pointer-events: none;
-      white-space: pre-line;
-    }
-    /* Fallback manual button if official VRButton fails to append */
-    #manual-vr-btn {
-      position: absolute;
-      bottom: 24px;
+      bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 16px 36px;
-      background: #0084ff;
-      color: #fff;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      font-size: 18px;
+      padding: 18px 40px;
+      background: #00c853;
+      color: #ffffff;
+      border: 3px solid #ffffff;
+      border-radius: 12px;
+      font-size: 22px;
       font-weight: bold;
       cursor: pointer;
-      z-index: 9999;
+      z-index: 99999;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+    #msg {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      color: #ff5555;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      display: none;
+      z-index: 100000;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <div id="status-bar">Checking WebXR status...</div>
-  <button id="manual-vr-btn">ENTER 360 VR</button>
+  <div id="msg"></div>
+  <button id="vr-btn">ENTER 360 VR</button>
 
   <script>
-    const statusBar = document.getElementById('status-bar');
-    const manualBtn = document.getElementById('manual-vr-btn');
+    const msgBox = document.getElementById('msg');
+    const vrBtn = document.getElementById('vr-btn');
 
-    function log(msg) {
-      statusBar.textContent += "\n" + msg;
-      console.log(msg);
+    function showError(err) {
+      msgBox.style.display = 'block';
+      msgBox.textContent = err;
     }
 
-    // --- 1. THREE.JS 360 ENVIRONMENT ---
+    // 1. SETUP THREE.JS 360 SCENE
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x171b18);
     scene.fog = new THREE.FogExp2(0x171b18, 0.05);
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
     const userRig = new THREE.Group();
-    userRig.position.set(0, 1.5, 0);
+    userRig.position.set(0, 1.5, 0); // Position player at center
     userRig.add(camera);
     scene.add(userRig);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.xr.enabled = true;
     document.body.appendChild(renderer.domElement);
 
-    // Try adding Three's official VRButton
-    try {
-      const officialBtn = VRButton.createButton(renderer);
-      document.body.appendChild(officialBtn);
-      // If official button loaded, hide the fallback manual button
-      manualBtn.style.display = 'none';
-      log("[OK] Official Three.js VRButton initialized.");
-    } catch (e) {
-      log("[WARN] Official VRButton failed to attach. Using manual button fallback.");
-    }
-
-    // --- 2. 360 PARTICLES SETUP ---
+    // 2. PROCEDURAL 360 LANDSCAPE PARTICLES
     const layerHeights = [-1.15, -0.60, 0, 0.75, 1.45];
     const layerDepths  = [-1.70, -0.90, 0, 0.85, 1.65];
     const layerSizes   = [1.8, 1.4, 1.0, 1.1, 0.75];
-    const layerColors = [
+    const layerColors  = [
       [48 / 255, 67 / 255, 48 / 255],
       [75 / 255, 96 / 255, 65 / 255],
       [112 / 255, 119 / 255, 83 / 255],
       [143 / 255, 119 / 255, 87 / 255],
       [83 / 255, 72 / 255, 57 / 255]
     ];
-    const layerCounts = [700, 850, 1100, 800, 750];
+    const layerCounts  = [700, 850, 1100, 800, 750];
     const centers = [
       [-1.15, -0.35, 0],
       [0.80, -0.75, 0.45],
@@ -135,8 +120,7 @@
         ) * S;
 
         const y = center[1] * spread + terrain + layerHeights[layer];
-
-        let detachedChance = (layer === 3) ? 0.10 : (layer === 4 ? 0.25 : 0.05);
+        const detachedChance = (layer === 3) ? 0.10 : (layer === 4 ? 0.25 : 0.05);
         const shade = 0.8 + Math.random() * 0.4;
         const baseCol = layerColors[layer];
 
@@ -163,7 +147,7 @@
     terrainCloud.position.set(0, 1.5, 0);
     scene.add(terrainCloud);
 
-    // --- 3. ANIMATION LOOP ---
+    // 3. RENDER LOOP
     let frame = 0;
     renderer.setAnimationLoop(() => {
       frame++;
@@ -185,32 +169,26 @@
       renderer.render(scene, camera);
     });
 
-    // --- 4. MANUAL VR BUTTON BACKUP (Always clickable) ---
-    manualBtn.addEventListener('click', async () => {
+    // 4. DIRECT USER CLICK ACTIVATION (Guaranteed for Quest 3)
+    vrBtn.addEventListener('click', async () => {
       if (!navigator.xr) {
-        alert("WebXR API is not supported in this browser. Please open in Meta Quest Browser.");
+        showError("WebXR is not available. Ensure you are inside the native Meta Quest Browser application.");
         return;
       }
+
       try {
+        // Direct request with safe fallback feature list
         const session = await navigator.xr.requestSession('immersive-vr', {
-          optionalFeatures: ['local-floor', 'local', 'viewer']
+          optionalFeatures: ['local-floor', 'bounded-floor', 'local']
         });
+
         await renderer.xr.setSession(session);
-        manualBtn.style.display = 'none';
-        statusBar.style.display = 'none';
+        vrBtn.style.display = 'none';
+        msgBox.style.display = 'none';
       } catch (err) {
-        log("[ERROR] Failed to start VR: " + err.message);
+        showError("Error starting VR: " + err.message + "\nIf on Quest, ensure boundary tracking is active.");
       }
     });
-
-    // Diagnostics check
-    if (!navigator.xr) {
-      log("[FAIL] navigator.xr is not found. Are you in a VR browser?");
-    } else {
-      navigator.xr.isSessionSupported('immersive-vr').then(supported => {
-        log(supported ? "[OK] 'immersive-vr' supported by headset." : "[FAIL] 'immersive-vr' reported NOT supported.");
-      });
-    }
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
