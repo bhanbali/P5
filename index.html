@@ -3,26 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student P5.js in Quest 3 VR</title>
-
-  <!-- Core Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <title>Landscape 360 VR</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
       overflow: hidden;
-      background: #111;
+      background: #171b18;
       font-family: sans-serif;
-    }
-    /* Move off-screen instead of display:none to prevent browser rendering throttling */
-    #defaultCanvas0 {
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      pointer-events: none;
     }
     #vr-btn {
       position: absolute;
@@ -30,24 +18,101 @@
       left: 50%;
       transform: translateX(-50%);
       padding: 14px 28px;
-      background: #0084ff;
+      background: #3e6b48;
       color: #fff;
-      border: none;
+      border: 1px solid #759369;
       border-radius: 8px;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      z-index: 9999;
+      z-index: 999;
+      display: none;
+    }
+    #desktop-info {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      color: #9cb591;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <button id="vr-btn" style="display:none;">ENTER VR</button>
+  <div id="desktop-info">Desktop: Click &amp; drag to look around 360° | VR: Click ENTER VR</div>
+  <button id="vr-btn">ENTER VR</button>
 
-  <!-- 1. Pure Student P5 Sketch -->
-  <script src="student_sketch.js"></script>
+  <script>
+    // --- 1. THREE.JS SCENE & WEBXR SETUP ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x171b18);
+    scene.fog = new THREE.FogExp2(0x171b18, 0.08);
 
-  <!-- 2. Reusable WebXR Harness -->
-  <script src="xr_harness.js"></script>
-</body>
-</html>
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
+    // User camera rig (placed at the center of the terrain)
+    const userRig = new THREE.Group();
+    userRig.position.set(0, 1.5, 0); // Natural eye height
+    userRig.add(camera);
+    scene.add(userRig);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // --- 2. STUDENT'S 5-LAYER PROCEDURAL LANDSCAPE CONFIGURATION ---
+    const layerHeights = [-1.15, -0.60, 0, 0.75, 1.45];
+    const layerDepths  = [-1.70, -0.90, 0, 0.85, 1.65];
+    const layerSizes   = [1.8, 1.4, 1.0, 1.1, 0.75];
+
+    // Converted to 0.0 - 1.0 range for GPU vertex coloring
+    const layerColors = [
+      [48 / 255, 67 / 255, 48 / 255],     // distant dark green
+      [75 / 255, 96 / 255, 65 / 255],     // muted olive
+      [112 / 255, 119 / 255, 83 / 255],   // moss
+      [143 / 255, 119 / 255, 87 / 255],   // earthy brown
+      [83 / 255, 72 / 255, 57 / 255]      // dark sediment
+    ];
+    const layerCounts = [700, 850, 1100, 800, 750];
+
+    const centers = [
+      [-1.15, -0.35, 0],
+      [0.80, -0.75, 0.45],
+      [1.20, 0.40, -0.35],
+      [-0.70, 0.70, 0.45]
+    ];
+
+    // Compute particles scaled to VR meters (scale factor = 0.02)
+    const particleData = [];
+    const positions = [];
+    const colors = [];
+
+    const S = 0.02; // Converts student's pixel space into a surrounding 360 room scale
+
+    for (let layer = 0; layer < 5; layer++) {
+      for (let i = 0; i < layerCounts[layer]; i++) {
+        const fragment = Math.floor(Math.random() * 4);
+        const center = centers[fragment];
+        const spread = layerSizes[layer];
+        const angle = Math.random() * Math.PI * 2;
+        const distFromCenter = Math.sqrt(Math.random()) * 75 * spread * S;
+
+        const x = center[0] * spread + Math.cos(angle) * distFromCenter;
+        const z = center[2] * spread + Math.sin(angle) * distFromCenter + layerDepths[layer];
+
+        // Organic terrain formula preserved from original sketch
+        const origX = x / S;
+        const origZ = z / S;
+        const terrain = (
+          Math.sin(origX * 0.025) * 13 +
+          Math.cos(origZ * 0.03) * 12 +
+          Math.sin((origX + origZ) * 0.025) * 8
+        ) * S;
+
+        const y = center[1] * spread + terrain + layerHeights[layer];
+
+        let detachedChance = 0.05;
