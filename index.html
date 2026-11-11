@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Underwater Bags VR</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  </head>
-  <body>
-    <a-scene background="color: #052d46" fog="type: exponential; color: #052d46; density: 0.12">
-      <a-assets>
-        <a-asset-item id="bag-obj" src="test_model.obj"></a-asset-item>
-        <img id="plastic-tex" src="test_texture.jpg">
-      </a-assets>
-
-      <!-- Player rig -->
-      <a-entity id="rig" position="0 0 0">
-        <a-camera position="0 1.6 0" look-controls wasd-controls></a-camera>
-        <a-entity laser-controls="hand: right"></a-entity>
-      </a-entity>
-
-      <!-- Lighting -->
-      <a-light type="ambient" color="#788c96"></a-light>
-      <a-light type="directional" color="#dcebf5" position="-1 2 1" intensity="0.8"></a-light>
-      <a-light type="point" color="#78bedc" position="0 2 0" intensity="1"></a-light>
-
-      <!-- Models -->
-      <a-entity obj-model="obj: #bag-obj" material="src: #plastic-tex; roughness: 0.3" position="0 1.5 -2.5" scale="0.01 0.01 0.01"></a-entity>
-      <a-entity obj-model="obj: #bag-obj" material="src: #plastic-tex; roughness: 0.3" position="-2 1.2 -1.5" scale="0.009 0.009 0.009"></a-entity>
-      <a-entity obj-model="obj: #bag-obj" material="src: #plastic-tex; roughness: 0.3" position="2 1.8 -2.0" scale="0.011 0.011 0.011"></a-entity>
-    </a-scene>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Underwater VR</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    #defaultCanvas0 { display: none; } /* Hide the 2D p5 canvas; Three.js displays it in VR */
+    #vr-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: #0084ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="vr-btn">ENTER VR</button>
+  <script src="sketch.js"></script>
+  <script src="xr_harness.js"></script>
+</body>
 </html>
