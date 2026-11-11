@@ -1,35 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Underwater VR</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student P5.js in Quest 3 VR</title>
+
+  <!-- Core Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <style>
-    body { margin: 0; overflow: hidden; background: #000; }
-    #defaultCanvas0 { display: none; } /* Hide the 2D p5 canvas; Three.js displays it in VR */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #111;
+      font-family: sans-serif;
+    }
+    /* Move off-screen instead of display:none to prevent browser rendering throttling */
+    #defaultCanvas0 {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      pointer-events: none;
+    }
     #vr-btn {
       position: absolute;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 12px 24px;
+      padding: 14px 28px;
       background: #0084ff;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 8px;
-      font-family: sans-serif;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      z-index: 999;
-      display: none;
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <button id="vr-btn">ENTER VR</button>
-  <script src="sketch.js"></script>
+  <button id="vr-btn" style="display:none;">ENTER VR</button>
+
+  <!-- 1. Pure Student P5 Sketch -->
+  <script src="student_sketch.js"></script>
+
+  <!-- 2. Reusable WebXR Harness -->
   <script src="xr_harness.js"></script>
 </body>
 </html>
