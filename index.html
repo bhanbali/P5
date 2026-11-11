@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student P5.js in Quest 3 VR</title>
 
+  <!-- Core Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #111;
+      font-family: sans-serif;
+    }
+    /* Move off-screen instead of display:none to prevent browser rendering throttling */
+    #defaultCanvas0 {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      pointer-events: none;
+    }
+    #vr-btn {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 28px;
+      background: #0084ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <button id="vr-btn" style="display:none;">ENTER VR</button>
+
+  <!-- 1. Pure Student P5 Sketch -->
+  <script src="student_sketch.js"></script>
+
+  <!-- 2. Reusable WebXR Harness -->
+  <script src="xr_harness.js"></script>
+</body>
+</html>
